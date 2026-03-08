@@ -1,124 +1,113 @@
+const API_KEY = "AIzaSyDUdMEEgbFRFjRVMuxF8kYIRDzojon0-ig";
 
-
-// 🔑 REEMPLAZA con tu API Key de Groq (console.groq.com)
-const GROQ_API_KEY = "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";
-
-// Contexto del blog que el chatbot conoce
+// Contexto del blog
 const SYSTEM_PROMPT = `
-Eres un asistente virtual amigable del blog de viajes de Junior García (conocido como "Morgan").
-Solo respondes preguntas relacionadas con su blog, sus viajes y sobre él como persona.
-Si te preguntan algo que no tiene que ver con el blog o los viajes, dices amablemente que solo puedes hablar sobre el blog.
+Eres un asistente virtual amigable del blog de viajes de Junior García (Morgan).
+Solo respondes preguntas sobre su blog, sus viajes o sobre él.
 
-Información que conoces:
+Información:
 
-SOBRE JUNIOR (MORGAN):
-- Su nombre completo es Junior Concepción García Álvarez, le dicen "Morgan".
-- Tiene 21 años, estudia ISC en la UJAT de Tabasco, División DACYTI.
-- Le apasionan las matemáticas, los videojuegos, el fútbol y estar con amigos.
-- Le gusta viajar y disfrutar la vida con su familia.
+SOBRE JUNIOR:
+- Junior Concepción García Álvarez
+- 21 años
+- Estudia Ingeniería en Sistemas Computacionales en la UJAT
+- Le gustan los videojuegos, matemáticas y fútbol
 
-LUGAR 1 — YUMKÁ (Tabasco, México):
-- Parque de naturaleza y animales salvajes en Tabasco.
-- Junior lo visitó a sus 20 años junto a su familia.
-- Describe la experiencia como mágica: pudo ver animales tiernos, peligrosos y enormes.
-- Fue su primera vez visitando ese lugar y la pasó de maravilla.
+LUGARES VISITADOS:
 
-LUGAR 2 — PALAPA SAN MIGUEL (Tabasco, México):
-- Lugar turístico junto al agua, con lanchas.
-- Fueron a celebrar el cumpleaños de la mamá de Junior.
-- Junior pudo subirse a una lancha y sentir la brisa del agua.
-- También fue su primera vez en ese tipo de lugar y lo disfrutó mucho.
+YUMKÁ
+- Parque natural en Tabasco
+- Visitado con su familia
+- Animales salvajes y naturaleza
 
-Responde siempre en español, de forma breve, amigable y con emojis ocasionales.
+PALAPA SAN MIGUEL
+- Lugar turístico con lanchas
+- Celebraron el cumpleaños de su mamá
+
+Responde siempre en español, amigable y breve.
 `;
 
-// Historial de mensajes para mantener contexto
-const historial = [];
-
-// ---- DOM ----
 const chatMessages = document.getElementById("chat-messages");
-const chatInput    = document.getElementById("chat-input");
-const chatBtn      = document.getElementById("chat-send");
-const chatToggle   = document.getElementById("chat-toggle");
-const chatBox      = document.getElementById("chat-box");
+const chatInput = document.getElementById("chat-input");
+const chatBtn = document.getElementById("chat-send");
+const chatToggle = document.getElementById("chat-toggle");
+const chatBox = document.getElementById("chat-box");
 
-// Mostrar/ocultar chat
 chatToggle.addEventListener("click", () => {
   chatBox.classList.toggle("chat-abierto");
-  if (chatBox.classList.contains("chat-abierto") && chatMessages.children.length === 0) {
-    agregarMensaje("bot", "¡Hola! 👋 Soy el asistente de Morgan. Puedes preguntarme sobre sus viajes a Yumká o Palapa San Miguel, o sobre él. ¿En qué te puedo ayudar?");
-  }
 });
 
-// Enviar con botón
 chatBtn.addEventListener("click", enviarMensaje);
 
-// Enviar con Enter
 chatInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") enviarMensaje();
 });
 
 async function enviarMensaje() {
+
   const texto = chatInput.value.trim();
   if (!texto) return;
 
-  // Mostrar mensaje del usuario
   agregarMensaje("user", texto);
   chatInput.value = "";
-  chatBtn.disabled = true;
 
-  // Agregar al historial
-  historial.push({ role: "user", content: texto });
-
-  // Mostrar indicador de escritura
-  const typing = agregarMensaje("bot", "...", true);
+  const typing = agregarMensaje("bot", "...");
 
   try {
-    const respuesta = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "llama3-8b-8192",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...historial
-        ],
-        max_tokens: 300,
-        temperature: 0.7
-      })
-    });
 
-    const data = await respuesta.json();
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: SYSTEM_PROMPT + "\nUsuario: " + texto
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
-    if (data.choices && data.choices[0]) {
-      const respuestaBot = data.choices[0].message.content;
-      historial.push({ role: "assistant", content: respuestaBot });
-      typing.remove();
-      agregarMensaje("bot", respuestaBot);
-    } else {
-      typing.remove();
-      agregarMensaje("bot", "Ups, algo salió mal. Intenta de nuevo 😅");
-    }
+    const data = await response.json();
+
+    typing.remove();
+
+    const respuesta =
+      data.candidates[0].content.parts[0].text;
+
+    agregarMensaje("bot", respuesta);
 
   } catch (error) {
+
     typing.remove();
-    agregarMensaje("bot", "No pude conectarme. Revisa tu conexión 🌐");
-    console.error("Groq error:", error);
+    agregarMensaje("bot", "Hubo un error 😅");
+
+    console.error(error);
+
   }
 
-  chatBtn.disabled = false;
-  chatInput.focus();
 }
 
-function agregarMensaje(tipo, texto, esTyping = false) {
+function agregarMensaje(tipo, texto) {
+
   const div = document.createElement("div");
-  div.classList.add("chat-msg", `chat-msg-${tipo}`);
-  if (esTyping) div.classList.add("typing");
+
+  div.classList.add("chat-msg");
+  div.classList.add(`chat-msg-${tipo}`);
+
   div.textContent = texto;
+
   chatMessages.appendChild(div);
+
   chatMessages.scrollTop = chatMessages.scrollHeight;
+
   return div;
 }
