@@ -1,113 +1,73 @@
 const API_KEY = "AIzaSyDUdMEEgbFRFjRVMuxF8kYIRDzojon0-ig";
 
-// Contexto del blog
-const SYSTEM_PROMPT = `
-Eres un asistente virtual amigable del blog de viajes de Junior García (Morgan).
-Solo respondes preguntas sobre su blog, sus viajes o sobre él.
-
-Información:
-
-SOBRE JUNIOR:
-- Junior Concepción García Álvarez
-- 21 años
-- Estudia Ingeniería en Sistemas Computacionales en la UJAT
-- Le gustan los videojuegos, matemáticas y fútbol
-
-LUGARES VISITADOS:
-
-YUMKÁ
-- Parque natural en Tabasco
-- Visitado con su familia
-- Animales salvajes y naturaleza
-
-PALAPA SAN MIGUEL
-- Lugar turístico con lanchas
-- Celebraron el cumpleaños de su mamá
-
-Responde siempre en español, amigable y breve.
-`;
-
-const chatMessages = document.getElementById("chat-messages");
-const chatInput = document.getElementById("chat-input");
-const chatBtn = document.getElementById("chat-send");
 const chatToggle = document.getElementById("chat-toggle");
 const chatBox = document.getElementById("chat-box");
+const chatSend = document.getElementById("chat-send");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
 
-chatToggle.addEventListener("click", () => {
+chatToggle.onclick = () => {
   chatBox.classList.toggle("chat-abierto");
+};
+
+chatSend.onclick = enviarMensaje;
+
+chatInput.addEventListener("keypress", function(e){
+  if(e.key === "Enter") enviarMensaje();
 });
 
-chatBtn.addEventListener("click", enviarMensaje);
-
-chatInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") enviarMensaje();
-});
-
-async function enviarMensaje() {
-
-  const texto = chatInput.value.trim();
-  if (!texto) return;
-
-  agregarMensaje("user", texto);
-  chatInput.value = "";
-
-  const typing = agregarMensaje("bot", "...");
-
-  try {
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: SYSTEM_PROMPT + "\nUsuario: " + texto
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    typing.remove();
-
-    const respuesta =
-      data.candidates[0].content.parts[0].text;
-
-    agregarMensaje("bot", respuesta);
-
-  } catch (error) {
-
-    typing.remove();
-    agregarMensaje("bot", "Hubo un error 😅");
-
-    console.error(error);
-
-  }
-
+function agregarMensaje(texto, tipo){
+  const msg = document.createElement("div");
+  msg.className = "mensaje " + tipo;
+  msg.textContent = texto;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function agregarMensaje(tipo, texto) {
+async function enviarMensaje(){
 
-  const div = document.createElement("div");
+  const textoUsuario = chatInput.value.trim();
 
-  div.classList.add("chat-msg");
-  div.classList.add(`chat-msg-${tipo}`);
+  if(!textoUsuario) return;
 
-  div.textContent = texto;
+  agregarMensaje(textoUsuario,"usuario");
 
-  chatMessages.appendChild(div);
+  chatInput.value="";
 
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  agregarMensaje("Pensando...","bot");
 
-  return div;
+  try{
+
+    const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        contents:[
+          {
+            parts:[
+              {text:textoUsuario}
+            ]
+          }
+        ]
+      })
+    });
+
+    const data = await respuesta.json();
+
+    document.querySelector(".bot:last-child").remove();
+
+    const textoIA = data.candidates[0].content.parts[0].text;
+
+    agregarMensaje(textoIA,"bot");
+
+  }catch(error){
+
+    document.querySelector(".bot:last-child").remove();
+
+    agregarMensaje("Error al conectar con el asistente.","bot");
+
+    console.error(error);
+  }
 }
