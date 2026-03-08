@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Viaje</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    // 
+    emailjs.init("daTd_Ou1wrOah3Hm3");
+  </script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <nav>
+      <span class="logo">Mi Viaje</span>
+      <ul>
+        <li><a href="#sobre-mi">Sobre mí</a></li>
+        <li><a href="#viaje">El Viaje</a></li>
+        <li><a href="#suscripcion">Suscríbete</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <p class="subtitulo">Una historia de</p>
+      <h1>Aventura <br/>& Descubrimiento</h1>
+    </div>
+  </section>
+
+  <!-- SOBRE MÍ -->
+  <section id="sobre-mi" class="sobre-mi">
+    <div class="container sobre-grid">
+
+      <div class="foto-perfil">
+ 
+        <img src="foto_perfil.jpeg" alt="Foto de perfil" />
+
+      </div>
+
+      <div class="bio">
+        <h2>Sobre mí</h2>
+        <h3>Junior Concepcion Garcia Alvarez </h3>
+        <p>
+          Hola me dicen morgan, o al menos eso recuerdo que me decian de cariño cuando era un niño,
+          soy muy apasionado por las matematicas, me gusta jugar videojuegos y practicar los deportes, en especial
+          lo que es el futbol, estudio ISC en la UJAT de Tabasco, Division DACYTI, cuento con 21 años de edad
+          disfruto estar rodeados de mis amigos, y en esta vida hay que ser feliz siempre.
+
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- VIAJE -->
+  <section id="viaje" class="viaje">
+    <div class="container">
+      <h2 class="seccion-titulo">El Viaje</h2>
+
+      <!-- LUGAR 1 -->
+      <article class="lugar">
+        <div class="lugar-header">
+          <span class="numero">01</span>
+          <h3>YUMKA</h3>
+        </div>
+
+        <div class="lugar-cuerpo">
+          <div class="lugar-texto">
+            <p>
+              De las mejores experiencias de mi vida ya que lp disfrute demasiado a lado de mi familia, de lo cual es maigico,
+              jamas habia vivido algo asi, el poder estar rodeado de tan bellos animales, tanto tiernos como peligrosos y enormes
+              fue mi primera vez estando ahi a mis 20 años, la pase de maravilla.
+
+            </p>
+          </div>
+
+          <div class="galeria">
+          
+            <div class="img-wrap">
+              <img src="yunka.jpeg" alt="Lugar 1 - Foto 1" />
+
+            </div>
+            <div class="img-wrap">
+              <img src="yunka_3.jpeg" alt="Lugar 1 - Foto 2" />
+            </div>
+            <div class="img-wrap">
+              <img src="yunka11.jpeg" alt="Lugar 1 - Foto 3" />
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="separador"></div>
+
+      <!-- LUGAR 2 -->
+      <article class="lugar lugar-invertido">
+        <div class="lugar-header">
+          <span class="numero">02</span>
+          <h3>PALAPA SAN MIGUEL</h3>
+        </div>
+
+        <div class="lugar-cuerpo">
+          <div class="galeria">
+
+            <div class="img-wrap">
+              <img src="barco1.jpeg" alt="Lugar 2 - Foto 1" />
+            </div>
+            <div class="img-wrap">
+              <img src="barco2.jpeg" alt="Lugar 2 - Foto 2" />
+            </div>
+            <div class="img-wrap">
+              <img src="barco3.jpeg" alt="Lugar 2 - Foto 3" />
+            </div>
+          </div>
+
+          <div class="lugar-texto">
+            <p>
+              Un lugar que de igual manera me encanto, ya que fue un lugar en donde pudimos celebrar el cumpleaños de mi mamá
+              lo disfrute mucho ya que mi mamá se la paso de la mejor manera, tambien la  primera vez que voy a un lugar asi tab bello, y 
+              poder subirme a una lancha y ver la brisa.
+
+            </p>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- SUSCRIPCIÓN -->
+  <section id="suscripcion" class="suscripcion">
+    <div class="container suscripcion-inner">
+      <p class="sub-etiqueta">Newsletter</p>
+      <h2>¿Te gustó el viaje?</h2>
+      <p class="sub-desc">Suscríbete y recibirás un correo de bienvenida con noticias de mis próximas aventuras.</p>
+
+      <div class="sub-form">
+        <input type="email" id="emailInput" placeholder="tucorreo@ejemplo.com" />
+        <button onclick="enviarSuscripcion()">Suscribirse</button>
+      </div>
+
+      <p id="sub-mensaje" class="sub-mensaje"></p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 · Junior Garcia · Todos los derechos reservados</p>
+  </footer>
+
+  <!-- LÓGICA DE EMAILJS -->
+  <script>
+    function enviarSuscripcion() {
+      const email = document.getElementById('emailInput').value.trim();
+      const mensaje = document.getElementById('sub-mensaje');
+
+      // Validación básica
+      if (!email || !email.includes('@')) {
+        mensaje.textContent = '⚠️ Por favor ingresa un correo válido.';
+        mensaje.style.color = '#b85c38';
+        return;
+      }
+
+      // Deshabilitar botón mientras envía
+      const btn = document.querySelector('.sub-form button');
+      btn.textContent = 'Enviando...';
+      btn.disabled = true;
+
+      // 🔑 REEMPLAZA los valores entre comillas:
+      //    - "TU_SERVICE_ID"   → tu Service ID de EmailJS
+      //    - "TU_TEMPLATE_ID"  → tu Template ID de EmailJS
+      emailjs.send("service_z704uya", "template_kwtfln2", {
+        to_email: email,
+        to_name: email.split('@')[0]   // usa la parte antes del @ como nombre
+      })
+      .then(function() {
+        mensaje.textContent = '✅ ¡Listo! Revisa tu bandeja de entrada.';
+        mensaje.style.color = '#2e7d32';
+        document.getElementById('emailInput').value = '';
+        btn.textContent = '¡Enviado!';
+      })
+      .catch(function(error) {
+        mensaje.textContent = '❌ Ocurrió un error. Intenta de nuevo.';
+        mensaje.style.color = '#b85c38';
+        btn.textContent = 'Suscribirse';
+        btn.disabled = false;
+        console.error('EmailJS error:', error);
+      });
+    }
+
+    // Permitir presionar Enter en el campo
+    document.getElementById('emailInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') enviarSuscripcion();
+    });
+  </script>
+
+  <!-- CHATBOT FLOTANTE -->
+  <!-- Botón para abrir/cerrar -->
+  <button id="chat-toggle" class="chat-toggle" title="Habla con el asistente">
+    💬
+    <span>Pregúntame</span>
+  </button>
+
+  <!-- Ventana del chat -->
+  <div id="chat-box" class="chat-box">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <span class="chat-avatar">🧳</span>
+        <div>
+          <strong>Asistente de Morgan</strong>
+          <small>Blog de Viajes</small>
+        </div>
+      </div>
+      <button onclick="document.getElementById('chat-box').classList.remove('chat-abierto')" class="chat-cerrar">✕</button>
+    </div>
+
+    <div id="chat-messages" class="chat-messages"></div>
+
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Escribe tu pregunta..." />
+      <button id="chat-send">➤</button>
+    </div>
+  </div>
+
+  <!-- JS externo del chatbot -->
+  <script src="chatbot.js"></script>
+
+</body>
+</html>
