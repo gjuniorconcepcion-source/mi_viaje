@@ -1,10 +1,7 @@
-// ============================================
-//  CHATBOT DEL VIAJERO — chatbot.js
-//  Usa Groq API con modelo llama3
-// ============================================
+
 
 // 🔑 REEMPLAZA con tu API Key de Groq (console.groq.com)
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 // Contexto del blog que el chatbot conoce
 const SYSTEM_PROMPT = `
