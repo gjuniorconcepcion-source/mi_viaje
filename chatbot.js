@@ -1,73 +1,109 @@
-const API_KEY = "AIzaSyDUdMEEgbFRFjRVMuxF8kYIRDzojon0-ig";
+// Contexto del blog que el chatbot conoce
+const SYSTEM_PROMPT = `
+Eres un asistente virtual amigable del blog de viajes de Junior García (conocido como Morgan).
+Solo respondes preguntas relacionadas con su blog, sus viajes y sobre él como persona.
 
+Información que conoces:
+
+SOBRE JUNIOR (MORGAN):
+- Su nombre completo es Junior Concepción García Álvarez.
+- Tiene 21 años.
+- Estudia Ingeniería en Sistemas Computacionales en la UJAT.
+- Le gustan las matemáticas, los videojuegos y el fútbol.
+- Disfruta viajar con su familia.
+
+LUGAR 1 — YUMKÁ:
+- Parque natural en Tabasco.
+- Visitado por Junior con su familia.
+- Experiencia llena de animales salvajes y naturaleza.
+
+LUGAR 2 — PALAPA SAN MIGUEL:
+- Lugar turístico con agua y lanchas.
+- Fue a celebrar el cumpleaños de su mamá.
+
+Responde siempre en español, de forma amigable y breve.
+`;
+
+const historial = [];
+
+const chatMessages = document.getElementById("chat-messages");
+const chatInput = document.getElementById("chat-input");
+const chatBtn = document.getElementById("chat-send");
 const chatToggle = document.getElementById("chat-toggle");
 const chatBox = document.getElementById("chat-box");
-const chatSend = document.getElementById("chat-send");
-const chatInput = document.getElementById("chat-input");
-const chatMessages = document.getElementById("chat-messages");
 
-chatToggle.onclick = () => {
+chatToggle.addEventListener("click", () => {
   chatBox.classList.toggle("chat-abierto");
-};
-
-chatSend.onclick = enviarMensaje;
-
-chatInput.addEventListener("keypress", function(e){
-  if(e.key === "Enter") enviarMensaje();
 });
 
-function agregarMensaje(texto, tipo){
-  const msg = document.createElement("div");
-  msg.className = "mensaje " + tipo;
-  msg.textContent = texto;
-  chatMessages.appendChild(msg);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+chatBtn.addEventListener("click", enviarMensaje);
 
-async function enviarMensaje(){
+chatInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") enviarMensaje();
+});
 
-  const textoUsuario = chatInput.value.trim();
+async function enviarMensaje() {
 
-  if(!textoUsuario) return;
+  const texto = chatInput.value.trim();
+  if (!texto) return;
 
-  agregarMensaje(textoUsuario,"usuario");
+  agregarMensaje("user", texto);
+  chatInput.value = "";
 
-  chatInput.value="";
+  historial.push({ role: "user", content: texto });
 
-  agregarMensaje("Pensando...","bot");
+  const typing = agregarMensaje("bot", "...");
 
-  try{
+  try {
 
-    const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
+    const respuesta = await fetch("/.netlify/functions/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
       },
-      body:JSON.stringify({
-        contents:[
-          {
-            parts:[
-              {text:textoUsuario}
-            ]
-          }
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...historial
         ]
       })
     });
 
     const data = await respuesta.json();
 
-    document.querySelector(".bot:last-child").remove();
+    typing.remove();
 
-    const textoIA = data.candidates[0].content.parts[0].text;
+    const respuestaBot = data.choices[0].message.content;
 
-    agregarMensaje(textoIA,"bot");
+    historial.push({
+      role: "assistant",
+      content: respuestaBot
+    });
 
-  }catch(error){
+    agregarMensaje("bot", respuestaBot);
 
-    document.querySelector(".bot:last-child").remove();
+  } catch (error) {
 
-    agregarMensaje("Error al conectar con el asistente.","bot");
+    typing.remove();
+    agregarMensaje("bot", "Ups, hubo un problema 😅");
 
     console.error(error);
+
   }
+}
+
+function agregarMensaje(tipo, texto) {
+
+  const div = document.createElement("div");
+
+  div.classList.add("chat-msg");
+  div.classList.add(`chat-msg-${tipo}`);
+
+  div.textContent = texto;
+
+  chatMessages.appendChild(div);
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  return div;
 }
